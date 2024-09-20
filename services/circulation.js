@@ -1,0 +1,48 @@
+const { Circulation } = require('../models');
+
+module.exports = {
+    getBorrowListByMember: async (memberCode, limit, offset, sort, sortType) => {
+        const borrowList = await Circulation.findAll({
+            where: {
+                member_code: memberCode
+            },
+        });
+
+        return borrowList;
+    },
+    addCirculation: async (memberCode, bookCode) => {
+        const borrowDate = new Date();
+        const dueDate = new Date() + 7;
+        const status = "borrowed";
+        const circulation = await Circulation.create({
+            member_code: memberCode,
+            book_code: bookCode,
+            borrow_date: borrowDate,
+            due_date: dueDate,
+            return_date: null,
+            status: status
+        });
+
+        return circulation;
+    },
+    getCirculationById: async (id) => {
+        const circulation = await Circulation.findByPk(id);
+
+        return circulation;
+    },
+    returnCirculation: async (id) => {
+        const returnDate = new Date();
+        const status = "returned";
+        
+        const circulation = await Circulation.update({
+            return_date: returnDate,
+            status: status
+        }, {
+            where: {
+                id: id
+            }
+        });
+
+        return circulation;
+    }
+}

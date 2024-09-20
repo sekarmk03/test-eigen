@@ -18,7 +18,7 @@ module.exports = (sequelize, DataTypes) => {
     circulation_id: DataTypes.INTEGER,
     penalty_start: DataTypes.DATEONLY,
     penalty_end: DataTypes.DATEONLY,
-    note: DataTypes.TEXT
+    notes: DataTypes.TEXT
   }, {
     sequelize,
     modelName: 'Penalty',

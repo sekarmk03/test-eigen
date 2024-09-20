@@ -22,7 +22,7 @@ module.exports = {
         type: Sequelize.DATE,
         allowNull: true
       },
-      note: {
+      notes: {
         type: Sequelize.TEXT
       },
       createdAt: {

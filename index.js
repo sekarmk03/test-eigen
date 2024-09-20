@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
+const router = require('./routes');
 
 const PORT = process.env.PORT || 5000;
 const app = express();
@@ -13,6 +14,9 @@ app.use(cors({
     credentials: true,
 }));
 app.use(express.urlencoded({extended: true}));
+
+// routers
+app.use('/api/v1', router);
 
 app.get('/', (req, res) => {
     const ip_addr = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
