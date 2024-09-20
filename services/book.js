@@ -1,4 +1,5 @@
 const { Book } = require('../models');
+const { Op } = require('sequelize');
 
 module.exports = {
     getBookByCode: async (bookCode) => {
@@ -23,5 +24,22 @@ module.exports = {
         });
 
         return updated;
-    }
+    },
+
+    getBooks: async (limit, offset, sort, sortType) => {
+        const books = await Book.findAndCountAll({
+            where: {
+                stock_available: {
+                    [Op.gt]: 0
+                }
+            },
+            limit: limit,
+            offset: offset,
+            order: [
+                [sort, sortType]
+            ]
+        });
+
+        return books;
+    },
 }
