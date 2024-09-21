@@ -1,0 +1,1963 @@
+openapi: 3.0.0
+info:
+  title: Book Eigen API
+  description: |
+    This API is used for managing the Book Eigen Library System. It includes endpoints for circulation, member, and book management.
+    GitHub Repository: [Book Eigen API Repo](https://github.com/sekarmk03)
+  version: 1.0.0
+servers:
+  - url: http://localhost:5000/api
+    description: Local development server
+tags:
+  - name: Circulations
+    description: Operations related to book borrowing and returning.
+  - name: Members
+    description: Operations related to library members.
+  - name: Books
+    description: Operations related to managing books in the library.
+  - name: Additionals - Members
+    description: Additional operations related to library members.
+  - name: Additionals - Books
+    description: Additional operations related to managing books in the library.
+  - name: Additionals - Circulation
+    description: Additional operations related to book borrowing and returning.
+  - name: Additionals - Authors
+    description: Additional operations related to book authors.
+  - name: Additionals - Publishers
+    description: Additional operations related to book publishers.
+paths:
+  ## Circulation Endpoints
+  /v1/circulations:
+    post:
+      tags:
+        - Circulations
+      summary: Add Borrow Book
+      description: Borrow a book for a member.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                member_code:
+                  type: string
+                  example: M003
+                book_code:
+                  type: string
+                  example: NRN-7
+      responses:
+        '201':
+          description: Successfully borrowed the book
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: CREATED
+                  message:
+                    type: string
+                    example: Borrow book success
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 7
+                      member_code:
+                        type: string
+                        example: M003
+                      book_code:
+                        type: string
+                        example: NRN-7
+                      borrow_date:
+                        type: string
+                        format: date-time
+                        example: 2024-09-21T04:16:51.438Z
+                      due_date:
+                        type: string
+                        format: date-time
+                        example: 2024-09-28T04:16:51.000Z
+                      return_date:
+                        type: string
+                        nullable: true
+                        example: null
+                      status:
+                        type: string
+                        example: borrowed
+                      updatedAt:
+                        type: string
+                        format: date-time
+                        example: 2024-09-21T04:16:51.440Z
+                      createdAt:
+                        type: string
+                        format: date-time
+                        example: 2024-09-21T04:16:51.440Z
+        '400':
+          description: Bad Request - Member has penalties, late returns, or book stock is unavailable
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: BAD REQUEST
+                  message:
+                    type: string
+                    example: '(book stock unavailable) or (member has late borrow not returned) or (member has penalties)'
+                  data:
+                    type: string
+                    example: null
+        '404':
+          description: Not Found - Member does not exist
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: NOT FOUND
+                  message:
+                    type: string
+                    example: Member does not exist
+                  data:
+                    type: string
+                    example: null
+    get:
+      tags:
+        - Additionals - Circulation
+      summary: Get all circulations with pagination, sorting, and optional settings
+      description: Retrieve all circulation data with optional pagination, sorting, and filters.
+      parameters:
+        - in: query
+          name: sort
+          schema:
+            type: string
+            example: created_at
+          description: Field to sort circulations by (e.g., created_at)
+        - in: query
+          name: type
+          schema:
+            type: string
+            enum: [asc, desc]
+            example: desc
+          description: Sort direction (ascending or descending)
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            example: 10
+          description: Number of circulations to retrieve per page
+        - in: query
+          name: page
+          schema:
+            type: integer
+            example: 1
+          description: Page number to retrieve (e.g., 1)
+        - in: query
+          name: option
+          schema:
+            type: boolean
+            example: true
+          description: Whether to include pagination or not (e.g., true for no pagination)
+      responses:
+        '200':
+          description: Successfully retrieved circulation data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: OK
+                  message:
+                    type: string
+                    example: Circulation list
+                  pagination:
+                    type: object
+                    nullable: true
+                    properties:
+                      totalRows:
+                        type: integer
+                        example: 6
+                      totalPages:
+                        type: integer
+                        example: 1
+                      thisPageRows:
+                        type: integer
+                        example: 6
+                      currentPage:
+                        type: integer
+                        example: 1
+                      prev:
+                        type: string
+                        nullable: true
+                        example: null
+                      next:
+                        type: string
+                        nullable: true
+                        example: null
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 6
+                        member_code:
+                          type: string
+                          example: M004
+                        book_code:
+                          type: string
+                          example: HOB-83
+                        borrow_date:
+                          type: string
+                          format: date-time
+                          example: 2024-09-20T16:00:00.000Z
+                        due_date:
+                          type: string
+                          format: date-time
+                          example: 2024-09-27T23:59:59.000Z
+                        return_date:
+                          type: string
+                          format: date-time
+                          nullable: true
+                          example: null
+                        status:
+                          type: string
+                          example: borrowed
+                        createdAt:
+                          type: string
+                          format: date-time
+                          example: 2024-09-20T16:00:00.000Z
+                        updatedAt:
+                          type: string
+                          format: date-time
+                          example: 2024-09-20T16:30:00.000Z
+                        member:
+                          type: object
+                          properties:
+                            code:
+                              type: string
+                              example: M004
+                            name:
+                              type: string
+                              example: Leyla
+                        book:
+                          type: object
+                          properties:
+                            code:
+                              type: string
+                              example: HOB-83
+                            title:
+                              type: string
+                              example: The Hobbit, or There and Back Again
+  /v1/circulations/{id}/return:
+    put:
+      tags:
+        - Circulations
+      summary: Return a borrowed book
+      description: Mark a book as returned by a member.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: The ID of the circulation record
+      responses:
+        '200':
+          description: Successfully returned the book
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: OK
+                  message:
+                    type: string
+                    example: Return book success
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 7
+                      member_code:
+                        type: string
+                        example: M003
+                      book_code:
+                        type: string
+                        example: NRN-7
+                      borrow_date:
+                        type: string
+                        format: date-time
+                        example: 2024-09-21T04:16:51.438Z
+                      due_date:
+                        type: string
+                        format: date-time
+                        example: 2024-09-28T04:16:51.000Z
+                      return_date:
+                        type: string
+                        format: date-time
+                        example: 2024-09-21T04:22:13.851Z
+                      status:
+                        type: string
+                        example: returned
+                      createdAt:
+                        type: string
+                        format: date-time
+                        example: 2024-09-21T04:16:51.440Z
+                      updatedAt:
+                        type: string
+                        format: date-time
+                        example: 2024-09-21T04:22:13.852Z
+        # '400':
+        #   description: Bad Request
+        #   content:
+        #     application/json:
+        #       schema:
+        #         type: object
+        #         properties:
+        #           status:
+        #             type: string
+        #             example: BAD REQUEST
+        #           message:
+        #             type: string
+        #             example: Error while returning the book
+        #           data:
+        #             type: string
+        #             example: null
+  ## Member Endpoints
+  /v1/members:
+    get:
+      tags:
+        - Members
+      summary: Get all members
+      description: Retrieve a list of members.
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+          example: 10
+        - name: page
+          in: query
+          schema:
+            type: integer
+          example: 1
+        - name: sort
+          in: query
+          schema:
+            type: string
+          example: name
+        - in: query
+          name: type
+          required: false
+          schema:
+            type: string
+          enum: [asc, desc]
+          example: asc
+        - in: query
+          name: option
+          required: false
+          schema:
+            type: boolean
+          example: false
+      responses:
+        '200':
+          description: Successfully retrieved member data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: OK
+                  message:
+                    type: string
+                    example: Members data retrieved successfully
+                  pagination:
+                    type: object
+                    nullable: true
+                    properties:
+                      totalRows:
+                        type: integer
+                        example: 4
+                      totalPages:
+                        type: integer
+                        example: 1
+                      thisPageRows:
+                        type: integer
+                        example: 4
+                      currentPage:
+                        type: integer
+                        example: 1
+                      prev:
+                        type: string
+                        nullable: true
+                        example: null
+                      next:
+                        type: string
+                        nullable: true
+                        example: null
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          example: M001
+                        name:
+                          type: string
+                          example: Angga Yudha
+                        email:
+                          type: string
+                          example: anggayudha@example.com
+                        phone:
+                          type: string
+                          example: 6289123456789
+                        book_count:
+                          type: string
+                          example: '0'
+    post:
+      tags:
+        - Additionals - Members
+      summary: Create a new member
+      description: Add a new member to the library system.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: Sekar Madu
+                email:
+                  type: string
+                  format: email
+                  example: sekarmadu99@gmail.com
+                phone:
+                  type: string
+                  example: 6289691798633
+      responses:
+        '200':
+          description: Member added successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: OK
+                  message:
+                    type: string
+                    example: Member added successfully
+                  data:
+                    type: object
+                    properties:
+                      code:
+                        type: string
+                        example: M005
+                      name:
+                        type: string
+                        example: Sekar Madu
+                      email:
+                        type: string
+                        example: sekarmadu99@gmail.com
+                      phone:
+                        type: string
+                        example: 6289691798633
+                      createdAt:
+                        type: string
+                        format: date-time
+                        example: 2024-09-21T11:02:29.644Z
+                      updatedAt:
+                        type: string
+                        format: date-time
+                        example: 2024-09-21T11:02:29.644Z
+  ## Book Endpoints
+  /v1/books:
+    get:
+      tags:
+        - Books
+      summary: Get all books
+      description: Retrieve a list of books.
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+          example: 10
+        - name: page
+          in: query
+          schema:
+            type: integer
+          example: 1
+      responses:
+        '200':
+          description: List of books retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: OK
+                  message:
+                    type: string
+                    example: Books data retrieved successfully
+                  pagination:
+                    type: object
+                    properties:
+                      totalRows:
+                        type: integer
+                        example: 3
+                      totalPages:
+                        type: integer
+                        example: 1
+                      thisPageRows:
+                        type: integer
+                        example: 3
+                      currentPage:
+                        type: integer
+                        example: 1
+                      prev:
+                        type: string
+                        example: null
+                      next:
+                        type: string
+                        example: null
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          example: SHR-1
+                        title:
+                          type: string
+                          example: A Study in Scarlett
+                        author_id:
+                          type: integer
+                          example: 2
+                        stock_total:
+                          type: integer
+                          example: 1
+                        stock_available:
+                          type: integer
+                          example: 1
+                        # "isbn": "978-1599866741",
+                        # "publisher_id": 2,
+                        # "published_date": "2007-11-07",
+                        # "createdAt": "2024-09-10T10:05:00.000Z",
+                        # "updatedAt": "2024-09-10T10:05:00.000Z",
+                        # "author": {
+                        # "id": 2,
+                        # "name": "Arthur Conan Doyle"
+                        # },
+                        # "publisher": {
+                        # "id": 2,
+                        # "name": "Ward, Lock & Co.",
+                        # "address": "United Kingdom"
+                        # }
+                        isbn:
+                          type: string
+                          example: 978-1599866741
+                        publisher_id:
+                          type: integer
+                          example: 2
+                        published_date:
+                          type: string
+                          example: 2007-11-07
+                        createdAt:
+                          type: string
+                          format: date-time
+                          example: 2024-09-10T10:05:00.000Z
+                        updatedAt:
+                          type: string
+                          format: date-time
+                          example: 2024-09-10T10:05:00.000Z
+                        author:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                              example: 2
+                            name:
+                              type: string
+                              example: Arthur Conan Doyle
+                        publisher:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                              example: 2
+                            name:
+                              type: string
+                              example: Ward, Lock & Co.
+                            address:
+                              type: string
+                              example: United Kingdom
+    post:
+      tags:
+        - Additionals - Books
+      summary: Create a new book
+      description: Add a new book to the library system.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                  example: TCV-1
+                title:
+                  type: string
+                  example: The Casual Vacancy
+                author_id:
+                  type: integer
+                  example: 1
+                stock:
+                  type: integer
+                  example: 2
+                isbn:
+                  type: string
+                  example: 9781408704202
+                publisher_id:
+                  type: integer
+                  example: 3
+                published_date:
+                  type: string
+                  format: date
+                  example: 2012-09-27
+      responses:
+        '201':
+          description: Book created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: OK
+                  message:
+                    type: string
+                    example: Book added successfully
+                  data:
+                    type: object
+                    properties:
+                      code:
+                        type: string
+                        example: TCV-1
+                      title:
+                        type: string
+                        example: The Casual Vacancy
+                      author_id:
+                        type: integer
+                        example: 1
+                      stock_total:
+                        type: integer
+                        example: 2
+                      stock_available:
+                        type: integer
+                        example: 2
+                      isbn:
+                        type: string
+                        example: 9781408704202
+                      publisher_id:
+                        type: integer
+                        example: 3
+                      published_date:
+                        type: string
+                        format: date
+                        example: 2012-09-27
+        '409':
+          description: Conflict - Book already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: CONFLICT
+                  message:
+                    type: string
+                    example: Book already exists
+                  data:
+                    type: string
+                    example: null
+  ## Additional Member Endpoints
+  /v1/members/{member_code}/penalties:
+    get:
+      tags:
+        - Additionals - Members
+      summary: Get member penalties
+      description: Retrieve penalties for a specific member by their member code.
+      parameters:
+        - in: path
+          name: member_code
+          required: true
+          schema:
+            type: string
+          description: Member code to retrieve penalties for (e.g., M001)
+      responses:
+        '200':
+          description: Successfully retrieved member penalties
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: OK
+                  message:
+                    type: string
+                    example: Penalties data retrieved successfully
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 1
+                        member_code:
+                          type: string
+                          example: M001
+                        circulation_id:
+                          type: integer
+                          example: 1
+                        penalty_start:
+                          type: string
+                          format: date-time
+                          example: 2024-09-22T00:00:00.000Z
+                        penalty_end:
+                          type: string
+                          format: date-time
+                          example: 2024-09-25T00:00:00.000Z
+                        notes:
+                          type: string
+                          example: late return
+                        createdAt:
+                          type: string
+                          format: date-time
+                          example: 2024-09-22T17:00:00.000Z
+                        updatedAt:
+                          type: string
+                          format: date-time
+                          example: 2024-09-22T17:00:00.000Z
+                        circulation:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                              example: 1
+                            book_code:
+                              type: string
+                              example: JK-45
+                            borrow_date:
+                              type: string
+                              format: date-time
+                              example: 2024-09-13T12:00:00.000Z
+                            due_date:
+                              type: string
+                              format: date-time
+                              example: 2024-09-20T23:59:59.000Z
+                            return_date:
+                              type: string
+                              format: date-time
+                              example: 2024-09-22T17:00:00.000Z
+                            status:
+                              type: string
+                              example: returned_late
+  /v1/members/{member_code}/circulations:
+    get:
+      tags:
+        - Additionals - Members
+      summary: Get member circulations
+      description: Retrieve all circulation records for a specific member by their member code.
+      parameters:
+        - in: path
+          name: member_code
+          required: true
+          schema:
+            type: string
+          description: Member code to retrieve circulations for (e.g., M003)
+      responses:
+        '200':
+          description: Successfully retrieved member circulations
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: OK
+                  message:
+                    type: string
+                    example: Circulations data retrieved successfully
+                  pagination:
+                    type: object
+                    properties:
+                      totalRows:
+                        type: integer
+                        example: 2
+                      totalPages:
+                        type: integer
+                        example: 1
+                      thisPageRows:
+                        type: integer
+                        example: 2
+                      currentPage:
+                        type: integer
+                        example: 1
+                      prev:
+                        type: string
+                        nullable: true
+                        example: null
+                      next:
+                        type: string
+                        nullable: true
+                        example: null
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 5
+                        member_code:
+                          type: string
+                          example: M003
+                        book_code:
+                          type: string
+                          example: HOB-83
+                        borrow_date:
+                          type: string
+                          format: date-time
+                          example: 2024-09-20T10:00:00.000Z
+                        due_date:
+                          type: string
+                          format: date-time
+                          example: 2024-09-27T23:59:59.000Z
+                        return_date:
+                          type: string
+                          nullable: true
+                          example: 2024-09-22T19:30:00.000Z
+                        status:
+                          type: string
+                          example: returned
+                        createdAt:
+                          type: string
+                          format: date-time
+                          example: 2024-09-20T10:00:00.000Z
+                        updatedAt:
+                          type: string
+                          format: date-time
+                          example: 2024-09-22T19:30:00.000Z
+                        book:
+                          type: object
+                          properties:
+                            code:
+                              type: string
+                              example: HOB-83
+                            title:
+                              type: string
+                              example: 'The Hobbit, or There and Back Again'
+  ## Get Member By Code
+  /v1/members/{member_code}:
+    get:
+      tags:
+        - Additionals - Members
+      summary: Get member details by code
+      description: Retrieve detailed information of a specific member by their member code.
+      parameters:
+        - in: path
+          name: member_code
+          required: true
+          schema:
+            type: string
+          description: Member code to retrieve details for (e.g., M001)
+      responses:
+        '200':
+          description: Successfully retrieved member data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: OK
+                  message:
+                    type: string
+                    example: Member data retrieved successfully
+                  data:
+                    type: object
+                    properties:
+                      code:
+                        type: string
+                        example: M001
+                      name:
+                        type: string
+                        example: Angga Yudha
+                      email:
+                        type: string
+                        example: anggayudha@example.com
+                      phone:
+                        type: string
+                        example: 6289123456789
+                      createdAt:
+                        type: string
+                        format: date-time
+                        example: 2024-09-13T10:00:00.000Z
+                      updatedAt:
+                        type: string
+                        format: date-time
+                        example: 2024-09-13T10:00:00.000Z
+        '404':
+          description: Member not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: NOT FOUND
+                  message:
+                    type: string
+                    example: Member does not exist
+                  data:
+                    type: string
+                    example: null
+    put:
+      tags:
+        - Additionals - Members
+      summary: Update an existing member
+      description: Update the details of an existing member by their member code.
+      parameters:
+        - in: path
+          name: member_code
+          required: true
+          schema:
+            type: string
+          description: Member code of the member to update (e.g., M005)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: Sekar Madu Kusumawardani
+                email:
+                  type: string
+                  format: email
+                  example: sekarmadukusumawardani@gmail.com
+      responses:
+        '200':
+          description: Member updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: OK
+                  message:
+                    type: string
+                    example: Member updated successfully
+                  data:
+                    type: object
+                    properties:
+                      code:
+                        type: string
+                        example: M005
+                      name:
+                        type: string
+                        example: Sekar Madu Kusumawardani
+                      email:
+                        type: string
+                        example: sekarmadukusumawardani@gmail.com
+                      phone:
+                        type: string
+                        example: 6289691798633
+                      createdAt:
+                        type: string
+                        format: date-time
+                        example: 2024-09-21T11:02:29.644Z
+                      updatedAt:
+                        type: string
+                        format: date-time
+                        example: 2024-09-21T11:04:25.247Z
+        '404':
+          description: Member not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: NOT FOUND
+                  message:
+                    type: string
+                    example: Member not found
+                  data:
+                    type: string
+                    example: null
+    delete:
+      tags:
+        - Additionals - Members
+      summary: Delete an existing member
+      description: Remove a member from the library system by their member code.
+      parameters:
+        - in: path
+          name: member_code
+          required: true
+          schema:
+            type: string
+          description: Member code of the member to delete (e.g., M005)
+      responses:
+        '200':
+          description: Member deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: OK
+                  message:
+                    type: string
+                    example: Member deleted successfully
+                  data:
+                    type: string
+                    example: null
+        '404':
+          description: Member not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: NOT FOUND
+                  message:
+                    type: string
+                    example: Member not found
+                  data:
+                    type: string
+                    example: null
+  /v1/books/{book_code}:
+    get:
+      tags:
+        - Additionals - Books
+      summary: Get a book by its code
+      description: Retrieve details of a book using its code.
+      parameters:
+        - in: path
+          name: book_code
+          required: true
+          schema:
+            type: string
+          description: The code of the book to retrieve (e.g., JK-45)
+      responses:
+        '200':
+          description: Successfully retrieved the book
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: OK
+                  message:
+                    type: string
+                    example: Book data retrieved successfully
+                  data:
+                    type: object
+                    properties:
+                      code:
+                        type: string
+                        example: JK-45
+                      title:
+                        type: string
+                        example: Harry Potter
+                      author_id:
+                        type: integer
+                        example: 1
+                      stock_total:
+                        type: integer
+                        example: 1
+                      stock_available:
+                        type: integer
+                        example: 0
+                      isbn:
+                        type: string
+                        example: 978-0-7475-3269-9
+                      publisher_id:
+                        type: integer
+                        example: 1
+                      published_date:
+                        type: string
+                        format: date
+                        example: 1997-06-26
+                      createdAt:
+                        type: string
+                        format: date-time
+                        example: 2024-09-10T10:00:00.000Z
+                      updatedAt:
+                        type: string
+                        format: date-time
+                        example: 2024-09-21T10:49:34.841Z
+        '404':
+          description: Book not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: NOT FOUND
+                  message:
+                    type: string
+                    example: Book not found
+                  data:
+                    type: string
+                    example: null
+    put:
+      tags:
+        - Additionals - Books
+      summary: Update an existing book
+      description: Update the details of an existing book by its code.
+      parameters:
+        - in: path
+          name: book_code
+          required: true
+          schema:
+            type: string
+          description: Book code to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: Casual Vacancy
+                author_id:
+                  type: integer
+                  example: 1
+                stock:
+                  type: integer
+                  example: 2
+                isbn:
+                  type: string
+                  example: 97-814-08704-202
+                publisher_id:
+                  type: integer
+                  example: 3
+                published_date:
+                  type: string
+                  format: date
+                  example: 2012-09-27
+      responses:
+        '200':
+          description: Book updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: OK
+                  message:
+                    type: string
+                    example: Book updated successfully
+                  data:
+                    type: object
+                    properties:
+                      code:
+                        type: string
+                        example: TCV-1
+                      title:
+                        type: string
+                        example: Casual Vacancy
+                      author_id:
+                        type: integer
+                        example: 1
+                      stock_total:
+                        type: integer
+                        example: 2
+                      stock_available:
+                        type: integer
+                        example: 2
+                      isbn:
+                        type: string
+                        example: 97-814-08704-202
+                      publisher_id:
+                        type: integer
+                        example: 3
+                      published_date:
+                        type: string
+                        format: date
+                        example: 2012-09-27
+        '404':
+          description: Book not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: NOT FOUND
+                  message:
+                    type: string
+                    example: Book not found
+                  data:
+                    type: string
+                    example: null
+    delete:
+      tags:
+        - Additionals - Books
+      summary: Delete a book by its code
+      description: Remove a book from the system by its code.
+      parameters:
+        - in: path
+          name: book_code
+          required: true
+          schema:
+            type: string
+          description: The code of the book to delete
+      responses:
+        '200':
+          description: Book deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: OK
+                  message:
+                    type: string
+                    example: Book deleted successfully
+                  data:
+                    type: string
+                    example: null
+        '404':
+          description: Book not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: NOT FOUND
+                  message:
+                    type: string
+                    example: Book not found
+                  data:
+                    type: string
+                    example: null
+  ## Get All Authors
+  /v1/authors:
+    get:
+      tags:
+        - Additionals - Authors
+      summary: Get all authors with pagination, sorting, and optional settings
+      description: Retrieve all author data with optional pagination, sorting, and filters.
+      parameters:
+        - in: query
+          name: sort
+          schema:
+            type: string
+            example: name
+          description: Field to sort authors by (e.g., name)
+        - in: query
+          name: type
+          schema:
+            type: string
+            enum: [asc, desc]
+            example: asc
+          description: Sort direction (ascending or descending)
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            example: 10
+          description: Number of authors to retrieve per page
+        - in: query
+          name: page
+          schema:
+            type: integer
+            example: 1
+          description: Page number to retrieve (e.g., 1)
+        - in: query
+          name: option
+          schema:
+            type: boolean
+            example: true
+          description: Whether to include pagination or not (e.g., true for no pagination)
+      responses:
+        '200':
+          description: Successfully retrieved author data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: OK
+                  message:
+                    type: string
+                    example: Authors data retrieved successfully
+                  pagination:
+                    type: object
+                    nullable: true
+                    properties:
+                      totalRows:
+                        type: integer
+                        example: 5
+                      totalPages:
+                        type: integer
+                        example: 1
+                      thisPageRows:
+                        type: integer
+                        example: 5
+                      currentPage:
+                        type: integer
+                        example: 1
+                      prev:
+                        type: string
+                        nullable: true
+                        example: null
+                      next:
+                        type: string
+                        nullable: true
+                        example: null
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 1
+                        name:
+                          type: string
+                          example: J.K Rowling
+                        bio:
+                          type: string
+                          example: Joanne Rowling is a British author...
+                        createdAt:
+                          type: string
+                          format: date-time
+                          example: 2024-09-10T10:00:00.000Z
+                        updatedAt:
+                          type: string
+                          format: date-time
+                          example: 2024-09-10T10:00:00.000Z
+                        books:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              code:
+                                type: string
+                                example: JK-45
+                              title:
+                                type: string
+                                example: Harry Potter
+  ## Get Author by ID
+  /v1/authors/{id}:
+    get:
+      tags:
+        - Additionals - Authors
+      summary: Get author by ID
+      description: Retrieve a specific author by their ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID of the author to retrieve
+      responses:
+        '200':
+          description: Successfully retrieved author data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: OK
+                  message:
+                    type: string
+                    example: Author data retrieved successfully
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 1
+                      name:
+                        type: string
+                        example: J.K Rowling
+                      bio:
+                        type: string
+                        example: Joanne Rowling is a British author...
+                      createdAt:
+                        type: string
+                        format: date-time
+                        example: 2024-09-10T10:00:00.000Z
+                      updatedAt:
+                        type: string
+                        format: date-time
+                        example: 2024-09-10T10:00:00.000Z
+                      books:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            code:
+                              type: string
+                              example: JK-45
+                            title:
+                              type: string
+                              example: Harry Potter
+    post:
+      tags:
+        - Additionals - Authors
+      summary: Create a new author
+      description: Add a new author to the system.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: J.K. Rowling
+                bio:
+                  type: string
+                  example: Joanne Rowling is a British author...
+      responses:
+        '201':
+          description: Author created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: OK
+                  message:
+                    type: string
+                    example: Author added successfully
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 1
+                      name:
+                        type: string
+                        example: J.K. Rowling
+                      bio:
+                        type: string
+                        example: Joanne Rowling is a British author...
+                      createdAt:
+                        type: string
+                        format: date-time
+                        example: 2024-09-21T11:48:22.314Z
+                      updatedAt:
+                        type: string
+                        format: date-time
+                        example: 2024-09-21T11:48:22.314Z
+    put:
+      tags:
+        - Additionals - Authors
+      summary: Update an existing author
+      description: Modify the details of an existing author.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID of the author to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: J.K. Rowling
+                bio:
+                  type: string
+                  example: Joanne Rowling is a British author...
+      responses:
+        '200':
+          description: Author updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: OK
+                  message:
+                    type: string
+                    example: Author updated successfully
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 1
+                      name:
+                        type: string
+                        example: J.K. Rowling
+                      bio:
+                        type: string
+                        example: Joanne Rowling is a British author...
+    delete:
+      tags:
+        - Additionals - Authors
+      summary: Delete an author by ID
+      description: Remove an author from the system by their ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID of the author to delete
+      responses:
+        '200':
+          description: Author deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: OK
+                  message:
+                    type: string
+                    example: Author deleted successfully
+                  data:
+                    type: object
+                    nullable: true
+                    example: null
+        '404':
+          description: Author not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: NOT FOUND
+                  message:
+                    type: string
+                    example: Author not found
+                  data:
+                    type: object
+                    nullable: true
+                    example: null
+  ## Get All Publishers
+  /v1/publishers:
+    get:
+      tags:
+        - Additionals - Publishers
+      summary: Get all publishers with pagination and sorting
+      description: Retrieve all publishers with optional pagination and sorting.
+      parameters:
+        - in: query
+          name: sort
+          schema:
+            type: string
+            example: name
+          description: Field to sort publishers by (e.g., name)
+        - in: query
+          name: type
+          schema:
+            type: string
+            enum: [asc, desc]
+            example: asc
+          description: Sort direction (ascending or descending)
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            example: 10
+          description: Number of publishers to retrieve per page
+        - in: query
+          name: page
+          schema:
+            type: integer
+            example: 1
+          description: Page number to retrieve (e.g., 1)
+      responses:
+        '200':
+          description: Successfully retrieved publishers data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: OK
+                  message:
+                    type: string
+                    example: Publishers data retrieved successfully
+                  pagination:
+                    type: object
+                    properties:
+                      totalRows:
+                        type: integer
+                        example: 5
+                      totalPages:
+                        type: integer
+                        example: 1
+                      thisPageRows:
+                        type: integer
+                        example: 5
+                      currentPage:
+                        type: integer
+                        example: 1
+                      prev:
+                        type: string
+                        nullable: true
+                        example: null
+                      next:
+                        type: string
+                        nullable: true
+                        example: null
+                  data:
+                    type: object
+                    properties:
+                      count:
+                        type: integer
+                        example: 5
+                      rows:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                              example: 1
+                            name:
+                              type: string
+                              example: Bloomsbury Publishing
+                            address:
+                              type: string
+                              example: United Kingdom
+                            email:
+                              type: string
+                              example: publicity@bloomsbury.com
+                            createdAt:
+                              type: string
+                              format: date-time
+                              example: 2024-09-10T10:00:00.000Z
+                            updatedAt:
+                              type: string
+                              format: date-time
+                              example: 2024-09-10T10:00:00.000Z
+                            books:
+                              type: array
+                              items:
+                                type: object
+                                properties:
+                                  code:
+                                    type: string
+                                    example: JK-45
+                                  title:
+                                    type: string
+                                    example: Harry Potter
+    post:
+      tags:
+        - Additionals - Publishers
+      summary: Create a new publisher
+      description: Add a new publisher to the system.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: Gramedia
+                address:
+                  type: string
+                  example: Jakarta
+                email:
+                  type: string
+                  example: info@gramedia.com
+      responses:
+        '201':
+          description: Publisher created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: OK
+                  message:
+                    type: string
+                    example: Publisher created successfully
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 7
+                      name:
+                        type: string
+                        example: Gramedia
+                      address:
+                        type: string
+                        example: Jakarta
+                      email:
+                        type: string
+                        example: info@gramedia.com
+                      createdAt:
+                        type: string
+                        format: date-time
+                        example: 2024-09-21T11:54:58.043Z
+                      updatedAt:
+                        type: string
+                        format: date-time
+                        example: 2024-09-21T11:54:58.043Z
+  ## Get Publisher by ID
+  /v1/publishers/{id}:
+    get:
+      tags:
+        - Additionals - Publishers
+      summary: Get publisher by ID
+      description: Retrieve a specific publisher by their ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID of the publisher to retrieve
+      responses:
+        '200':
+          description: Successfully retrieved publisher data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: OK
+                  message:
+                    type: string
+                    example: Publisher data retrieved successfully
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 1
+                      name:
+                        type: string
+                        example: Bloomsbury Publishing
+                      address:
+                        type: string
+                        example: United Kingdom
+                      email:
+                        type: string
+                        example: publicity@bloomsbury.com
+                      createdAt:
+                        type: string
+                        format: date-time
+                        example: 2024-09-10T10:00:00.000Z
+                      updatedAt:
+                        type: string
+                        format: date-time
+                        example: 2024-09-10T10:00:00.000Z
+                      books:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            code:
+                              type: string
+                              example: JK-45
+                            title:
+                              type: string
+                              example: Harry Potter
+    delete:
+      tags:
+        - Additionals - Publishers
+      summary: Delete a publisher by ID
+      description: Remove a publisher from the system by their ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID of the publisher to delete
+      responses:
+        '200':
+          description: Publisher deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: OK
+                  message:
+                    type: string
+                    example: Publisher deleted successfully
+                  data:
+                    type: object
+                    nullable: true
+                    example: null
+        '404':
+          description: Publisher not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: NOT FOUND
+                  message:
+                    type: string
+                    example: Publisher not found
+                  data:
+                    type: object
+                    nullable: true
+                    example: null
+    put:
+      tags:
+        - Additionals - Publishers
+      summary: Update an existing publisher
+      description: Modify the details of an existing publisher.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID of the publisher to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: Gramedia1
+                address:
+                  type: string
+                  example: Jakarta
+                email:
+                  type: string
+                  example: info@gramedia.com
+      responses:
+        '200':
+          description: Publisher updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: OK
+                  message:
+                    type: string
+                    example: Publisher updated successfully
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 7
+                      name:
+                        type: string
+                        example: Gramedia1
+                      address:
+                        type: string
+                        example: Jakarta
+                      email:
+                        type: string
+                        example: info@gramedia.com
+                      createdAt:
+                        type: string
+                        format: date-time
+                        example: 2024-09-21T11:54:58.043Z
+                      updatedAt:
+                        type: string
+                        format: date-time
+                        example: 2024-09-21T11:56:01.431Z

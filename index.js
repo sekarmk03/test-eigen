@@ -5,6 +5,8 @@ const cors = require('cors');
 const router = require('./routes');
 const cron = require('node-cron');
 const tasks = require('./tasks');
+const swaggerUi = require('swagger-ui-express');
+const swaggerDocument = require('./swagger/swaggerConfig');
 
 const PORT = process.env.PORT || 5000;
 const app = express();
@@ -25,6 +27,8 @@ cron.schedule('1 0 * * *', async () => {
         console.log('ERROR: ', error.message);        
     }
 });
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // routers
 app.use('/api/v1', router);
