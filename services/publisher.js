@@ -25,6 +25,20 @@ module.exports = {
         return publishers;
     },
 
+    getPublisherById: async (id) => {
+        const publisher = await Publisher.findByPk(id, {
+            include: [
+                {
+                    model: Book,
+                    as: 'books',
+                    attributes: ['id', 'title']
+                }
+            ]
+        });
+
+        return publisher;
+    },
+
     addPublisher: async (name, address, email) => {
         const publisher = await Publisher.create({
             name: name,

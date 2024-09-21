@@ -1,5 +1,5 @@
+const { publisherSvc } = require('../services');
 const { sequelize } = require('../models');
-const { authorSvc } = require('../services');
 const paginate = require('../utils/generate_pagination');
 const err = require('../utils/errors');
 
@@ -15,21 +15,21 @@ module.exports = {
             let start = 0 + (page - 1) * limit;
             let end = page * limit;
 
-            let authors = null;
+            let publishers = null;
             let pagination = null;
             if (option == "false") {
-                authors = await authorSvc.getAuthors(limit, start, sort, type);
-                pagination = paginate(authors.count, authors.rows.length, limit, page, start, end);
+                publishers = await publisherSvc.getPublishers(limit, start, sort, type);
+                pagination = paginate(publishers.count, publishers.rows.length, limit, page, start, end);
             } else {
-                authors = await authorSvc.getAuthors(0, 0, sort, type);
-                authors = authors.rows;
+                publishers = await publisherSvc.getPublishers(0, 0, sort, type);
+                publishers = publishers.rows;
             }
 
             return res.status(200).json({
                 status: 'OK',
-                message: 'Authors data retrieved successfully',
+                message: 'Publishers data retrieved successfully',
                 pagination,
-                data: authors,
+                data: publishers,
             });
         } catch (error) {
             next(error);
@@ -40,13 +40,13 @@ module.exports = {
         try {
             const { id } = req.params;
 
-            const author = await authorSvc.getAuthorById(id);
-            if (!author) return err.not_found(res, "Author not found");
+            const publisher = await publisherSvc.getPublisherById(id);
+            if (!publisher) return err.not_found(res, "Publisher not found");
 
             return res.status(200).json({
                 status: 'OK',
-                message: 'Author data retrieved successfully',
-                data: author
+                message: 'Publisher data retrieved successfully',
+                data: publisher
             });
         } catch (error) {
             next(error);
@@ -57,19 +57,18 @@ module.exports = {
         let transaction;
         try {
             const body = req.body;
-            const { name, bio } = body;
+            const { name, address, email } = body;
 
             transaction = await sequelize.transaction();
-            const author = await authorSvc.addAuthor(name, bio);
+            const publisher = await publisherSvc.addPublisher(name, address, email);
 
             await transaction.commit();
             return res.status(201).json({
                 status: 'OK',
-                message: 'Author added successfully',
-                data: author
-            });
+                message: 'Publisher created successfully',
+                data: publisher
+            }); 
         } catch (error) {
-            if (transaction) await transaction.rollback();
             next(error);
         }
     },
@@ -77,26 +76,30 @@ module.exports = {
     update: async (req, res, next) => {
         let transaction;
         try {
+            const { id } = req.params;
             const body = req.body;
-            const { id } = req.params
-            const { name, bio } = body;
+            const { name, address, email } = body;
 
-            let author = await authorSvc.getAuthorById(id);
-            if (!author) return err.not_found(res, "Author not found");
+            let publisher = await publisherSvc.getPublisherById(id);
+            if (!publisher) return err.not_found(res, "Publisher not found");
 
             transaction = await sequelize.transaction();
-            await authorSvc.updateAuthor(id, name || author.name, bio || author.bio);
+            publisher = await publisherSvc.updatePublisher(
+                publisher.id,
+                name || publisher.name,
+                address || publisher.address,
+                email || publisher.email
+            );
 
-            author = await authorSvc.getAuthorById(id);
+            publisher = await publisherSvc.getPublisherById(id);
 
             await transaction.commit();
             return res.status(200).json({
                 status: 'OK',
-                message: 'Author updated successfully',
-                data: author
+                message: 'Publisher updated successfully',
+                data: publisher
             });
         } catch (error) {
-            if (transaction) await transaction.rollback();
             next(error);
         }
     },
@@ -105,15 +108,15 @@ module.exports = {
         try {
             const { id } = req.params;
 
-            let author = await authorSvc.getAuthorById(id);
-            if (!author) return err.not_found(res, "Author not found");
+            let publisher = await publisherSvc.getPublisherById(id);
+            if (!publisher) return err.not_found(res, "Publisher not found");
 
-            await authorSvc.deleteAuthor(id);
+            await publisherSvc.deletePublisher(id);
 
             return res.status(200).json({
                 status: 'OK',
-                message: 'Author deleted successfully',
-                data: null
+                message: 'Publisher deleted successfully',
+                data: publisher
             });
         } catch (error) {
             next(error);
