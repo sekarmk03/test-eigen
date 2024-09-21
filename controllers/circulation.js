@@ -1,5 +1,5 @@
 const { sequelize } = require('../models');
-const { circulation, penalty, member, book } = require('../services');
+const { circulationSvc, penaltySvc, memberSvc, bookSvc } = require('../services');
 const err = require('../utils/errors');
 
 module.exports = {
@@ -11,16 +11,16 @@ module.exports = {
             const { member_code, book_code } = body;
 
             // if member doesn't exists
-            const memberData = await member.getMemberByCode(member_code);
+            const memberData = await memberSvc.getMemberByCode(member_code);
             if (!memberData) return err.not_found(res, 'Member does not exist');
 
             // if book unavailable
-            const bookData = await book.getBookByCode(book_code);
+            const bookData = await bookSvc.getBookByCode(book_code);
             if (!bookData) return err.not_found(res, 'Book does not exist');
             if (bookData.stock_available <= 0) return err.bad_request(res, 'Book stock unavailable');
 
             // if member borrow > 2 books
-            const borrowList = await circulation.getBorrowListByMember(member_code);
+            const borrowList = await circulationSvc.getBorrowListByMember(member_code);
             let borrowedCount = 0;
             borrowList.forEach(borrow => {
                 if (borrow.status == "borrowed") return borrowedCount++;
@@ -31,13 +31,13 @@ module.exports = {
             if (borrowList.some(borrow => borrow.status == "late")) return err.bad_request(res, 'Member has late borrow not returned');
 
             // if member has penalty
-            const penalties = await penalty.getPenaltiesByMember(member_code);
+            const penalties = await penaltySvc.getPenaltiesByMember(member_code);
             if (penalties.length > 0) return err.bad_request(res, 'Member has penalties');
 
             // transaction
             transaction = await sequelize.transaction();
-            const circulationData = await circulation.addCirculation(member_code, book_code);
-            await book.updateBookAvailable(book_code, -1);
+            const circulationData = await circulationSvc.addCirculation(member_code, book_code);
+            await bookSvc.updateBookAvailable(book_code, -1);
 
             await transaction.commit();
 
@@ -57,7 +57,7 @@ module.exports = {
         try {
             const { id } = req.params;
 
-            let circulationData = await circulation.getCirculationById(id);
+            let circulationData = await circulationSvc.getCirculationById(id);
             if (!circulationData) return err.not_found(res, 'Circulation does not exist');
 
             // if book already returned
@@ -67,13 +67,13 @@ module.exports = {
             transaction = await sequelize.transaction();
 
             if (circulationData.status == "late") {
-                await penalty.addPenalty(circulationData.member_code, new Date(), "late return book");
+                await penaltySvc.addPenalty(circulationData.member_code, new Date(), "late return book");
             }
 
-            circulationData = await circulation.returnCirculation(id);
-            circulationData = await circulation.getCirculationById(id);
+            circulationData = await circulationSvc.returnCirculation(id);
+            circulationData = await circulationSvc.getCirculationById(id);
 
-            await book.updateBookAvailable(circulationData.book_code, 1);
+            await bookSvc.updateBookAvailable(circulationData.book_code, 1);
 
             await transaction.commit();
 

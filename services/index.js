@@ -1,11 +1,15 @@
-const circulation = require('./circulation');
-const penalty = require('./penalty');
-const member = require('./member');
-const book = require('./book');
+const circulationSvc = require('./circulation');
+const penaltySvc = require('./penalty');
+const memberSvc = require('./member');
+const bookSvc = require('./book');
+const authorSvc = require('./author');
+const publisherSvc = require('./publisher');
 
 module.exports = {
-    circulation,
-    penalty,
-    member,
-    book,
+    circulationSvc,
+    penaltySvc,
+    memberSvc,
+    bookSvc,
+    authorSvc,
+    publisherSvc
 }

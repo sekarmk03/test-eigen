@@ -1,4 +1,4 @@
-const { member } = require('../services');
+const { memberSvc } = require('../services');
 const paginate = require('../utils/generate_pagination');
 
 module.exports = {
@@ -13,7 +13,7 @@ module.exports = {
             let start = 0 + (page - 1) * limit;
             let end = page * limit;
 
-            let members = await member.getMembers(limit, start, sort, type);
+            let members = await memberSvc.getMembers(limit, start, sort, type);
             let pagination = paginate(members.count, members.rows.length, limit, page, start, end);
 
             return res.status(200).json({

@@ -1,4 +1,4 @@
-const { book } = require('../services');
+const { bookSvc } = require('../services');
 const err = require('../utils/errors');
 const paginate = require('../utils/generate_pagination');
 
@@ -14,7 +14,7 @@ module.exports = {
             let start = 0 + (page - 1) * limit;
             let end = page * limit;
 
-            let books = await book.getBooksAvailable(limit, start, sort, type);
+            let books = await bookSvc.getBooksAvailable(limit, start, sort, type);
             let pagination = paginate(books.count, books.rows.length, limit, page, start, end);
 
             return res.status(200).json({

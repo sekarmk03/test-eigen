@@ -50,8 +50,11 @@ module.exports = {
     },
 
     getCirculations: async (limit, offset, sort, sortType) => {
-        const circulations = await Circulation.findAndCountAll({
-            include: [
+        let opts = {};
+        if (limit && limit != undefined && limit != null && limit > 0) {
+            opts.limit = limit;
+            opts.offset = offset;
+            opts.incule = [
                 {
                     model: Member,
                     as: 'member',
@@ -62,9 +65,11 @@ module.exports = {
                     as: 'book',
                     attributes: ['code', 'title']
                 }
-            ],
-            limit: limit,
-            offset: offset,
+            ];
+        }
+
+        const circulations = await Circulation.findAndCountAll({
+            ...opts,
             order: [
                 [sort, sortType]
             ]
@@ -94,4 +99,16 @@ module.exports = {
 
         return circulations;
     },
+
+    updateCirculationStatus: async (id, status) => {
+        const circulation = await Circulation.update({
+            status: status
+        }, {
+            where: {
+                id: id
+            }
+        });
+
+        return circulation;
+    }
 }
