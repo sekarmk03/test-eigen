@@ -1,5 +1,5 @@
 const { sequelize } = require('../models');
-const { circulation, penalty, member, book, circulation } = require('../services');
+const { circulation, penalty, member, book } = require('../services');
 const err = require('../utils/errors');
 
 module.exports = {

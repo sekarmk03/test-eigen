@@ -5,7 +5,7 @@ module.exports = {
     getBookByCode: async (bookCode) => {
         const book = await Book.findOne({
             where: {
-                book_code: bookCode
+                code: bookCode
             }
         });
 
@@ -15,7 +15,7 @@ module.exports = {
     updateBookAvailable: async (bookCode, number) => {
         const book = await Book.findOne({
             where: {
-                book_code: bookCode
+                code: bookCode
             }
         });
 
@@ -26,7 +26,7 @@ module.exports = {
         return updated;
     },
 
-    getBooks: async (limit, offset, sort, sortType) => {
+    getBooksAvailable: async (limit, offset, sort, sortType) => {
         const books = await Book.findAndCountAll({
             where: {
                 stock_available: {
