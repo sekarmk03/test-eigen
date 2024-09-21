@@ -1,6 +1,7 @@
 const { sequelize } = require('../models');
 const { circulationSvc, penaltySvc, memberSvc, bookSvc } = require('../services');
 const err = require('../utils/errors');
+const paginate = require('../utils/generate_pagination');
 
 module.exports = {
     borrow: async (req, res, next) => {
@@ -94,5 +95,37 @@ module.exports = {
             if (transaction) await transaction.rollback();
             next(error);
         }
-    }
+    },
+
+    index: async (req, res, next) => {
+        try {
+            let {
+                sort = "created_at", type = "desc", page = "1", limit = "10", option = "false"
+            } = req.query;
+
+            page = parseInt(page);
+            limit = parseInt(limit);
+            let start = 0 + (page - 1) * limit;
+            let end = page * limit;
+
+            let circulations = null;
+            let pagination = null;
+            if (option == "false") {
+                circulations = await circulationSvc.getCirculations(limit, start, sort, type);
+                pagination = paginate(circulations.count, circulations.rows.length, limit, page, start, end);
+            } else {
+                circulations = await circulationSvc.getCirculations(0, 0, sort, type);
+                circulations = circulations.rows;
+            }
+
+            return res.status(200).json({
+                status: 'OK',
+                message: "Circulation list",
+                pagination,
+                data: circulations
+            });
+        } catch (error) {
+            next(error);
+        }
+    },
 }
