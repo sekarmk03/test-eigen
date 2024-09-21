@@ -20,7 +20,8 @@ module.exports = {
             if (bookData.stock_available <= 0) return err.bad_request(res, 'Book stock unavailable');
 
             // if member borrow > 2 books
-            const borrowList = await circulationSvc.getBorrowListByMember(member_code);
+            let borrowList = await circulationSvc.getCirculationsByMember(member_code, 0, 0, 'created_at', 'asc');
+            borrowList = borrowList.rows;
             let borrowedCount = 0;
             borrowList.forEach(borrow => {
                 if (borrow.status == "borrowed") return borrowedCount++;
@@ -70,7 +71,14 @@ module.exports = {
                 await penaltySvc.addPenalty(circulationData.member_code, new Date(), "late return book");
             }
 
-            circulationData = await circulationSvc.returnCirculation(id);
+            let status = "";
+            if (new Date(circulationData.due_date) < new Date()) {
+                status = "returned_late";
+            } else {
+                status = "returned";
+            }
+
+            circulationData = await circulationSvc.returnCirculation(id, status);
             circulationData = await circulationSvc.getCirculationById(id);
 
             await bookSvc.updateBookAvailable(circulationData.book_code, 1);

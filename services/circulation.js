@@ -1,20 +1,12 @@
 const { Circulation, Member, Book } = require('../models');
 
 module.exports = {
-    getBorrowListByMember: async (memberCode, limit, offset, sort, sortType) => {
-        const borrowList = await Circulation.findAll({
-            where: {
-                member_code: memberCode
-            },
-        });
-
-        return borrowList;
-    },
-
     addCirculation: async (memberCode, bookCode) => {
         const borrowDate = new Date();
-        const dueDate = new Date() + 7;
+        let dueDate = new Date(now.setDate(now.getDate() + 7));
+        dueDate.setHours(23, 59, 59, 999);
         const status = "borrowed";
+
         const circulation = await Circulation.create({
             member_code: memberCode,
             book_code: bookCode,
@@ -33,9 +25,8 @@ module.exports = {
         return circulation;
     },
 
-    returnCirculation: async (id) => {
+    returnCirculation: async (id, status) => {
         const returnDate = new Date();
-        const status = "returned";
         
         const circulation = await Circulation.update({
             return_date: returnDate,
@@ -54,7 +45,7 @@ module.exports = {
         if (limit && limit != undefined && limit != null && limit > 0) {
             opts.limit = limit;
             opts.offset = offset;
-            opts.incule = [
+            opts.include = [
                 {
                     model: Member,
                     as: 'member',
@@ -79,19 +70,24 @@ module.exports = {
     },
 
     getCirculationsByMember: async (memberCode, limit, offset, sort, sortType) => {
-        const circulations = await Circulation.findAndCountAll({
-            where: {
-                member_code: memberCode
-            },
-            include: [
+        let opts = {};
+        if (limit && limit != undefined && limit != null && limit > 0) {
+            opts.limit = limit;
+            opts.offset = offset;
+            opts.include = [
                 {
                     model: Book,
                     as: 'book',
                     attributes: ['code', 'title']
                 }
-            ],
-            limit: limit,
-            offset: offset,
+            ];
+        }
+
+        const circulations = await Circulation.findAndCountAll({
+            where: {
+                member_code: memberCode
+            },
+            ...opts,
             order: [
                 [sort, sortType]
             ]
