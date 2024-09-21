@@ -37,6 +37,23 @@ module.exports = {
         }
     },
 
+    show: async (req, res, next) => {
+        try {
+            const { member_code } = req.params;
+
+            const member = await memberSvc.getMemberByCode(member_code);
+            if (!member) return err.not_found(res, "Member not found");
+
+            return res.status(200).json({
+                status: 'OK',
+                message: 'Member data retrieved successfully',
+                data: member
+            });
+        } catch (error) {
+            next(error);
+        }
+    },
+
     create: async (req, res, next) => {
         let transaction;
         try {

@@ -61,6 +61,23 @@ module.exports = {
         }
     },
 
+    show: async (req, res, next) => {
+        try {
+            const { book_code } = req.params;
+
+            const book = await bookSvc.getBookByCode(book_code);
+            if (!book) return err.not_found(res, "Book not found");
+
+            return res.status(200).json({
+                status: 'OK',
+                message: 'Book data retrieved successfully',
+                data: book
+            });
+        } catch (error) {
+            next(error);
+        }
+    },
+
     create: async (req, res, next) => {
         let transaction;
         try {

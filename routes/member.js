@@ -3,6 +3,7 @@ const router = express.Router();
 const { member } = require('../controllers');
 
 router.get('/', member.index);
+router.get('/:member_code', member.show);
 router.get('/:member_code/penalty', member.penalty);
 router.get('/:member_code/circulation', member.circulation);
 router.post('/', member.create);

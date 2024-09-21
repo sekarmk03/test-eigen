@@ -3,7 +3,7 @@ const { Author, Book } = require('../models');
 module.exports = {
     getAuthors: async (limit, offset, sort, sortType) => {
         let opts = {};
-        if (limit && limit && undefined && limit != null && limit > 0) {
+        if (limit && limit != undefined && limit != null && limit > 0) {
             opts.limit = limit;
             opts.offset = offset;
             opts.include = [
