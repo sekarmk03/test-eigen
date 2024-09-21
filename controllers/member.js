@@ -1,5 +1,5 @@
 const { sequelize } = require('../models');
-const { memberSvc } = require('../services');
+const { memberSvc, penaltySvc, circulationSvc } = require('../services');
 const paginate = require('../utils/generate_pagination');
 const err = require('../utils/errors');
 
@@ -7,7 +7,7 @@ module.exports = {
     index: async (req, res, next) => {
         try {
             let {
-                sort = "created_at", type = "desc", page = "1", limit = "10"
+                sort = "created_at", type = "desc", page = "1", limit = "10", option = "false"
             } = req.query;
 
             page = parseInt(page);
@@ -15,14 +15,22 @@ module.exports = {
             let start = 0 + (page - 1) * limit;
             let end = page * limit;
 
-            let members = await memberSvc.getMembers(limit, start, sort, type);
-            let pagination = paginate(members.count, members.rows.length, limit, page, start, end);
+            let members = null;
+            let pagination = null;
+
+            if (option == "false") {
+                members = await memberSvc.getMembers(limit, start, sort, type);
+                pagination = paginate(members.count, members.rows.length, limit, page, start, end);
+            } else {
+                members = await memberSvc.getMembers(0, 0, sort, type);
+                members = members.rows;
+            }
 
             return res.status(200).json({
                 status: 'OK',
                 message: 'Members data retrieved successfully',
                 pagination,
-                data: members.rows,
+                data: members,
             });
         } catch (error) {
             next(error);
@@ -100,4 +108,52 @@ module.exports = {
             next(error);
         }
     },
+
+    circulation: async (req, res, next) => {
+        try {
+            const { member_code } = req.params;
+            let {
+                sort = "created_at", type = "desc", page = "1", limit = "10", option = "false"
+            } = req.query;
+
+            page = parseInt(page);
+            limit = parseInt(limit);
+            let start = 0 + (page - 1) * limit;
+            let end = page * limit;
+
+            let circulations = null;
+            let pagination = null;
+            if (option == "false") {
+                circulations = await circulationSvc.getCirculationsByMember(member_code, limit, start, sort, type);
+                pagination = paginate(circulations.count, circulations.rows.length, limit, page, start, end);
+            } else {
+                circulations = await circulationSvc.getCirculationsByMember(member_code, 0, 0, sort, type);
+                circulations = circulations.rows;
+            }
+
+            return res.status(200).json({
+                status: 'OK',
+                message: 'Circulations data retrieved successfully',
+                pagination,
+                data: circulations
+            });
+        } catch (error) {
+            next(error);
+        }
+    },
+
+    penalty: async (req, res, next) => {
+        try {
+            const { member_code } = req.params;
+            const penalties = await penaltySvc.getPenaltiesByMember(member_code);
+
+            return res.status(200).json({
+                status: 'OK',
+                message: 'Penalties data retrieved successfully',
+                data: penalties
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
 }

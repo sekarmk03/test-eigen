@@ -13,12 +13,16 @@ module.exports = {
     },
 
     getMembers: async (limit, offset, sort, sortType) => {
-        const query = `SELECT m.code, m.name, m.email, m.phone, COUNT(c.book_code) AS book_count
+        let query = `SELECT m.code, m.name, m.email, m.phone, COUNT(c.book_code) AS book_count
                     FROM members m
                     LEFT JOIN circulations c ON m.code = c.member_code AND (c.status = 'borrowed' OR c.status = 'late')
                     GROUP BY m.code, m.name, m.email, m.phone
-                    ORDER BY ${sort} ${sortType}
-                    LIMIT ${limit} OFFSET ${offset};`;
+                    ORDER BY ${sort} ${sortType}`;
+
+        const queryLimit = `LIMIT ${limit} OFFSET ${offset}`;
+        if (limit && limit != undefined && limit != null && limit > 0) {
+            query += queryLimit;
+        }
         
         const members = await sequelize.query(query, {
             type: sequelize.QueryTypes.SELECT
