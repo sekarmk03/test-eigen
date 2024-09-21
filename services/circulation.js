@@ -1,4 +1,4 @@
-const { Circulation } = require('../models');
+const { Circulation, Member, Book } = require('../models');
 
 module.exports = {
     getBorrowListByMember: async (memberCode, limit, offset, sort, sortType) => {
@@ -10,6 +10,7 @@ module.exports = {
 
         return borrowList;
     },
+
     addCirculation: async (memberCode, bookCode) => {
         const borrowDate = new Date();
         const dueDate = new Date() + 7;
@@ -25,11 +26,13 @@ module.exports = {
 
         return circulation;
     },
+
     getCirculationById: async (id) => {
         const circulation = await Circulation.findByPk(id);
 
         return circulation;
     },
+
     returnCirculation: async (id) => {
         const returnDate = new Date();
         const status = "returned";
@@ -44,5 +47,51 @@ module.exports = {
         });
 
         return circulation;
-    }
+    },
+
+    getCirculations: async (limit, offset, sort, sortType) => {
+        const circulations = await Circulation.findAndCountAll({
+            include: [
+                {
+                    model: Member,
+                    as: 'member',
+                    attributes: ['code', 'name']
+                },
+                {
+                    model: Book,
+                    as: 'book',
+                    attributes: ['code', 'title']
+                }
+            ],
+            limit: limit,
+            offset: offset,
+            order: [
+                [sort, sortType]
+            ]
+        });
+
+        return circulations;
+    },
+
+    getCirculationsByMember: async (memberCode, limit, offset, sort, sortType) => {
+        const circulations = await Circulation.findAndCountAll({
+            where: {
+                member_code: memberCode
+            },
+            include: [
+                {
+                    model: Book,
+                    as: 'book',
+                    attributes: ['code', 'title']
+                }
+            ],
+            limit: limit,
+            offset: offset,
+            order: [
+                [sort, sortType]
+            ]
+        });
+
+        return circulations;
+    },
 }
