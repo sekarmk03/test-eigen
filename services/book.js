@@ -56,6 +56,35 @@ module.exports = {
         return books;
     },
 
+    getBooks: async (limit, offset, sort, sortType) => {
+        let opts = {};
+        if (limit && limit != undefined && limit != null && limit > 0) {
+            opts.limit = limit;
+            opts.offset = offset;
+            opts.include = [
+                {
+                    model: Author,
+                    as: 'author',
+                    attributes: ['id', 'name']
+                },
+                {
+                    model: Publisher,
+                    as: 'publisher',
+                    attributes: ['id', 'name', 'address']
+                }
+            ];
+        }
+
+        const books = await Book.findAndCountAll({
+            ...opts,
+            order: [
+                [sort, sortType]
+            ]
+        });
+
+        return books;
+    },
+
     addBook: async (title, authorId, stock, isbn, publisherId, publishedDate) => {
         const latestBook = await Book.findOne({
             order: [

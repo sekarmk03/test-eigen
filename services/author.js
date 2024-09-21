@@ -56,4 +56,18 @@ module.exports = {
 
         return author;
     },
+
+    getAuthorById: async (id) => {
+        const author = await Author.findByPk(id, {
+            include: [
+                {
+                    model: Book,
+                    as: 'books',
+                    attributes: ['id', 'title']
+                }
+            ]
+        });
+
+        return author;
+    },
 }
