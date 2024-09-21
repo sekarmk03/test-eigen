@@ -10,9 +10,11 @@ module.exports = {
                 {
                     model: Book,
                     as: 'books',
-                    attributes: ['id', 'title']
+                    attributes: ['code', 'title']
                 }
             ];
+        } else {
+            opts.attributes = ['id', 'name'];
         }
 
         const authors = await Author.findAndCountAll({
@@ -63,7 +65,7 @@ module.exports = {
                 {
                     model: Book,
                     as: 'books',
-                    attributes: ['id', 'title']
+                    attributes: ['code', 'title']
                 }
             ]
         });

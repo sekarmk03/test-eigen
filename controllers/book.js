@@ -47,14 +47,13 @@ module.exports = {
                 pagination = paginate(books.count, books.rows.length, limit, page, start, end);
             } else {
                 books = await bookSvc.getBooks(0, 0, sort, type);
-                books = books.rows;
             }
 
             return res.status(200).json({
                 status: 'OK',
                 message: 'Books data retrieved successfully',
                 pagination,
-                data: books,
+                data: books.rows,
             });
         } catch (error) {
             next(error);
@@ -82,10 +81,13 @@ module.exports = {
         let transaction;
         try {
             const body = req.body;
-            const { title, author_id, stock, isbn, publisher_id, published_date } = body;
+            const { code, title, author_id, stock, isbn, publisher_id, published_date } = body;
+
+            let book = await bookSvc.getBookByCode(code);
+            if (book) return err.conflict(res, "Book already exists");
 
             transaction = await sequelize.transaction();
-            const book = await bookSvc.addBook(title, author_id, stock, isbn, publisher_id, published_date);
+            book = await bookSvc.addBook(code, title, author_id, stock, isbn, publisher_id, published_date);
 
             await transaction.commit();
             return res.status(201).json({

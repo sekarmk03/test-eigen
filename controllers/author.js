@@ -22,14 +22,13 @@ module.exports = {
                 pagination = paginate(authors.count, authors.rows.length, limit, page, start, end);
             } else {
                 authors = await authorSvc.getAuthors(0, 0, sort, type);
-                authors = authors.rows;
             }
 
             return res.status(200).json({
                 status: 'OK',
                 message: 'Authors data retrieved successfully',
                 pagination,
-                data: authors,
+                data: authors.rows,
             });
         } catch (error) {
             next(error);

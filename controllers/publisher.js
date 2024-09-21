@@ -116,7 +116,7 @@ module.exports = {
             return res.status(200).json({
                 status: 'OK',
                 message: 'Publisher deleted successfully',
-                data: publisher
+                data: null
             });
         } catch (error) {
             next(error);

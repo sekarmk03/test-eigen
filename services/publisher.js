@@ -10,9 +10,11 @@ module.exports = {
                 {
                     model: Book,
                     as: 'books',
-                    attributes: ['id', 'title']
+                    attributes: ['code', 'title']
                 }
             ];
+        } else {
+            opts.attributes = ['id', 'name'];
         }
 
         const publishers = await Publisher.findAndCountAll({
@@ -31,7 +33,7 @@ module.exports = {
                 {
                     model: Book,
                     as: 'books',
-                    attributes: ['id', 'title']
+                    attributes: ['code', 'title']
                 }
             ]
         });

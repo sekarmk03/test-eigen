@@ -33,7 +33,7 @@ module.exports = {
             if (borrowList.some(borrow => borrow.status == "late")) return err.bad_request(res, 'Member has late borrow not returned');
 
             // if member has penalty
-            const penalties = await penaltySvc.getPenaltiesByMember(member_code);
+            const penalties = await penaltySvc.getPenaltiesActiveByMember(member_code);
             if (penalties.length > 0) return err.bad_request(res, 'Member has penalties');
 
             // transaction
@@ -115,14 +115,13 @@ module.exports = {
                 pagination = paginate(circulations.count, circulations.rows.length, limit, page, start, end);
             } else {
                 circulations = await circulationSvc.getCirculations(0, 0, sort, type);
-                circulations = circulations.rows;
             }
 
             return res.status(200).json({
                 status: 'OK',
                 message: "Circulation list",
                 pagination,
-                data: circulations
+                data: circulations.rows
             });
         } catch (error) {
             next(error);

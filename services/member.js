@@ -19,7 +19,7 @@ module.exports = {
                     GROUP BY m.code, m.name, m.email, m.phone
                     ORDER BY ${sort} ${sortType}`;
 
-        const queryLimit = `LIMIT ${limit} OFFSET ${offset}`;
+        const queryLimit = ` LIMIT ${limit} OFFSET ${offset}`;
         if (limit && limit != undefined && limit != null && limit > 0) {
             query += queryLimit;
         }

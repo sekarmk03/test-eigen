@@ -73,6 +73,8 @@ module.exports = {
                     attributes: ['id', 'name', 'address']
                 }
             ];
+        } else {
+            opts.attributes = ['code', 'title'];
         }
 
         const books = await Book.findAndCountAll({
@@ -85,17 +87,9 @@ module.exports = {
         return books;
     },
 
-    addBook: async (title, authorId, stock, isbn, publisherId, publishedDate) => {
-        const latestBook = await Book.findOne({
-            order: [
-                ['code', 'DESC']
-            ]
-        });
-
-        const bookCode = generateCode(latestBook.code);
-
+    addBook: async (code, title, authorId, stock, isbn, publisherId, publishedDate) => {
         const book = await Book.create({
-            code: bookCode,
+            code: code,
             title: title,
             author_id: authorId,
             stock_total: stock,

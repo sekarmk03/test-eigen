@@ -23,14 +23,13 @@ module.exports = {
                 pagination = paginate(members.count, members.rows.length, limit, page, start, end);
             } else {
                 members = await memberSvc.getMembers(0, 0, sort, type);
-                members = members.rows;
             }
 
             return res.status(200).json({
                 status: 'OK',
                 message: 'Members data retrieved successfully',
                 pagination,
-                data: members,
+                data: members.rows,
             });
         } catch (error) {
             next(error);
@@ -145,14 +144,13 @@ module.exports = {
                 pagination = paginate(circulations.count, circulations.rows.length, limit, page, start, end);
             } else {
                 circulations = await circulationSvc.getCirculationsByMember(member_code, 0, 0, sort, type);
-                circulations = circulations.rows;
             }
 
             return res.status(200).json({
                 status: 'OK',
                 message: 'Circulations data retrieved successfully',
                 pagination,
-                data: circulations
+                data: circulations.rows,
             });
         } catch (error) {
             next(error);

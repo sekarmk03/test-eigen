@@ -2,7 +2,7 @@ const { Circulation, Member, Book } = require('../models');
 
 module.exports = {
     addCirculation: async (memberCode, bookCode) => {
-        const borrowDate = new Date();
+        const now = new Date();
         let dueDate = new Date(now.setDate(now.getDate() + 7));
         dueDate.setHours(23, 59, 59, 999);
         const status = "borrowed";
@@ -10,7 +10,7 @@ module.exports = {
         const circulation = await Circulation.create({
             member_code: memberCode,
             book_code: bookCode,
-            borrow_date: borrowDate,
+            borrow_date: new Date(),
             due_date: dueDate,
             return_date: null,
             status: status
