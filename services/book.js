@@ -1,5 +1,6 @@
 const { Book, Author, Publisher } = require('../models');
 const { Op } = require('sequelize');
+const generateCode = require('../utils/generate_code');
 
 module.exports = {
     getBookByCode: async (bookCode) => {
@@ -56,7 +57,16 @@ module.exports = {
     },
 
     addBook: async (title, authorId, stock, isbn, publisherId, publishedDate) => {
+        const latestBook = await Book.findOne({
+            order: [
+                ['code', 'DESC']
+            ]
+        });
+
+        const bookCode = generateCode(latestBook.code);
+
         const book = await Book.create({
+            code: bookCode,
             title: title,
             author_id: authorId,
             stock_total: stock,

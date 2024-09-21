@@ -10,6 +10,7 @@ module.exports = {
 
         return penalties;
     },
+    
     addPenalty: async (memberCode, penaltyStart, notes) => {
         const penaltyEnd = new Date(penaltyStart) + 3;
         const penalty = await Penalty.create({

@@ -1,5 +1,5 @@
 const { Member, sequelize, Circulation } = require('../models');
-const { Op } = require('sequelize');
+const generateCode = require('../utils/generate_code');
 
 module.exports = {
     getMemberByCode: async (memberCode) => {
@@ -41,7 +41,16 @@ module.exports = {
     },
 
     addMember: async (name, email, phone) => {
+        const latestMember = await Member.findOne({
+            order: [
+                ['code', 'DESC']
+            ]
+        });
+
+        const memberCode = generateCode(latestMember.code);
+
         const member = await Member.create({
+            code: memberCode,
             name: name,
             email: email,
             phone: phone
